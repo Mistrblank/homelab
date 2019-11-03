@@ -1,0 +1,51 @@
+---
+# Install using these directions: 
+#  https://docs.docker.com/install/linux/docker-ce/debian/
+
+# Notes:
+# right now I basically have a "become: true" attached to each task, this does
+#   not feel right, however I'm not sure that I should be forcing the role to 
+#   run with become privileges either.  I should see if there's a better way.
+
+# Uninstall all older versions:
+- name: 
+  apt: 
+    name: 
+      - docker
+      - docker.io
+      - docker-engine
+    state: absent
+  become: true
+
+# Make sure the OS is updated
+- name: update the OS
+  apt:
+    name: "*"
+    state: latest
+  become: true
+
+# Raspbian specific installation directions:
+#  https://docs.docker.com/install/linux/docker-ce/debian/#install-using-the-convenience-script
+
+# Curl needs to be installed
+- name: curl is installed
+  apt:
+    name: curl
+    state: present
+  become: true
+
+- name: download and run the convenience script
+  shell: "/usr/bin/curl -fsSL https://get.docker.com | /bin/sh -"
+  become: true
+  args:
+    warn: false 
+  # warn turns off the get_url/uri warning, though I may want to try doing
+  # it that way if possible
+
+# Add the pi user to docker group so that ansible can start and stop docker
+- name: 
+  user:
+    name: pi
+    groups: docker
+    append: yes
+  become: true

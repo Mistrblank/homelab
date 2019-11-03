@@ -1,0 +1,8 @@
+---
+
+- import_playbook: first_run.yml
+
+- hosts: all
+  roles:
+    - docker-raspbian
+

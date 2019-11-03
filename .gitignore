@@ -1,0 +1,11 @@
+## Ansible-ignore retry files
+*.retry
+
+## Ansible-ignore password files, use these for vaulted files
+*.pass
+
+## Don't commit any private keys. 
+*id_rsa
+
+## Do not store the credentials directory contents
+credentials/*

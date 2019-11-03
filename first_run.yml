@@ -1,0 +1,71 @@
+---
+# This playbook is the first run against a freshly installed raspian system
+# Our primary concern here is that the password for pi is going to be default, 
+# we'll want to change it to something random, though we'll continue using it 
+# as the ansible user id.
+# To start though, we'll want to create a new user id that we will be using to 
+# login (though hopefully never), then we can start removing accessibility from
+# the 'pi' login.
+
+- hosts: all
+  become: true 
+  tasks:
+
+    # Create a vince user id
+    - name: create user id vince
+      user:
+        name: vince
+        # At some point I should drop this password in a vault, and I need to 
+        # change it, but I hope people realize I'm not using abc123 in case this 
+        # ends up on a commit.
+        password: "{{ 'abc123' | password_hash('sha512') }}"
+
+    - name: create .ssh directories for the keys
+      file: 
+        path: "/home/{{ item }}/.ssh"
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: 0700
+        state: directory
+      with_items:
+        - pi
+        - vince
+
+    - name: copy ssh public keys to host
+      copy: 
+        src: "ssh/{{ item }}_id_rsa.pub"
+        dest: "/home/{{ item }}/.ssh/authorized_keys"
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: 0600
+      with_items:
+        - pi
+        - vince
+    # copying the file is great, but it's likely better to look up the public 
+    # key and add the contents via lineinfile module
+
+    # Now we want to add vince to the sudoers file
+    - name: copy vince's sudoers file
+      copy:
+        src: files/020_vince
+        dest: /etc/sudoers.d/020_vince
+        mode: 0440
+        owner: root
+        group: root
+        validate: /usr/sbin/visudo -cf %s
+    # Note this file doesn't grant passwordless sudo, it shouldn't since this 
+    # account logs in to this host, potentially. You could argue the key is 
+    # required, but for now password login is enabled anyway. 
+
+    # Next step is to completely randomize the pi and root passwords. I suppose
+    # we could dump the random password here as well. 
+    - name: set a random password for pi
+      user: 
+        name: pi
+        password: "{{ lookup('password', 'credentials/pi length=12 chars=ascii_letters,digits') | password_hash('sha512') }}"
+
+    - name: update the OS
+      ## Raspbian is all I'm using so this should just be an apt update
+      apt:
+        name: "*"
+        state: latest

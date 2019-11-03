@@ -1,0 +1,8 @@
+all: 
+  hosts:
+    pi:
+      ansible_ssh_user: pi
+      ansible_ssh_pass: raspberry 
+      # I don't mind listing this password.  The first thing I'm going to do is 
+      # change it.
+      ansible_ssh_key: ./ssh/pi_id_rsa
