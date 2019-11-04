@@ -1,0 +1,29 @@
+---
+# The plan here is to create the necessary definitions to start a pihole 
+# container on a raspberry pi
+
+- name: start pihole 
+  docker_container:
+    name: pihole
+    image: pihole/pihole:latest
+    state: started
+    auto_remove: yes
+    # DNS Settings are required by certain versions of pihole/pihole, this is
+    # a bug that is hopefully resolved. 
+    dns_servers: 
+      - "127.0.0.1"
+      - "1.1.1.1"
+      - "1.0.0.1"
+    published_ports: 
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    volumes: 
+      - '/home/pi/pihole/etc-pihole/:/etc/pihole/'
+      - '/home/pi/pihole/etc-dnsmasq.d/:/etc/dnsmasq.d/'
+    # For now these volumes are fine, though I would like to mount a volume from
+    # my network storage in the future. 
+    env:
+      WEBPASSWORD: "abc123"  # This needs to be removed/changed

@@ -28,12 +28,16 @@
 #  https://docs.docker.com/install/linux/docker-ce/debian/#install-using-the-convenience-script
 
 # Curl needs to be installed
-- name: curl is installed
+- name: curl and python-pip is installed
   apt:
-    name: curl
-    state: present
-  become: true
+    name: 
+      - curl
+      - python-docker
+#      - python-pip
 
+    state: latest
+  become: true
+  
 - name: download and run the convenience script
   shell: "/usr/bin/curl -fsSL https://get.docker.com | /bin/sh -"
   become: true
@@ -43,9 +47,9 @@
   # it that way if possible
 
 # Add the pi user to docker group so that ansible can start and stop docker
-- name: 
+- name: add pi user to docker group
   user:
     name: pi
     groups: docker
     append: yes
-  become: true
+  become: true  
